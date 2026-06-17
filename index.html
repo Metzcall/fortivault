@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FortiVault · Cofres</title>
+<style>
+:root{
+  --forti-red:#EE3124;--ink:#0b1f2e;
+  --epic:#9b4dff;--epic2:#c89bff;--leg:#ffb020;--leg2:#ffe089;
+  --bg0:#04080d;--bg1:#0a1722;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#eaf2f8;
+  background:radial-gradient(1200px 700px at 50% -10%,#0e2236 0%,var(--bg1) 45%,var(--bg0) 100%);
+  min-height:100%;overflow-x:hidden}
+header{text-align:center;padding:34px 16px 6px;position:relative;z-index:2}
+.brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:6px}
+.brand .mark{width:34px;height:34px}
+.brand h1{font-size:30px;letter-spacing:1px;font-weight:800}
+.brand h1 span{color:var(--forti-red)}
+.tagline{color:#9fb6c9;font-size:13px;letter-spacing:3px;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:26px;max-width:1200px;margin:30px auto;padding:0 22px 70px;position:relative;z-index:2}
+.chest{position:relative;border-radius:18px;padding:24px 18px 22px;cursor:pointer;
+  background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.01));
+  border:1px solid rgba(255,255,255,.08);text-align:center;
+  transition:transform .25s,box-shadow .25s;overflow:hidden}
+.chest:hover{transform:translateY(-6px)}
+.chest .rar{position:absolute;top:12px;right:12px;font-size:10px;font-weight:800;letter-spacing:1.5px;
+  padding:4px 9px;border-radius:20px;text-transform:uppercase;z-index:6}
+.epic .rar{background:rgba(155,77,255,.18);color:var(--epic2);border:1px solid var(--epic)}
+.legendary .rar{background:rgba(255,176,32,.16);color:var(--leg2);border:1px solid var(--leg)}
+.epic{box-shadow:0 0 0 1px rgba(155,77,255,.25),0 14px 40px -18px var(--epic)}
+.legendary{box-shadow:0 0 0 1px rgba(255,176,32,.3),0 14px 40px -16px var(--leg)}
+.halo{position:absolute;inset:-30% 8% auto 8%;height:75%;border-radius:50%;
+  filter:blur(40px);opacity:.5;z-index:0;animation:pulse 3s ease-in-out infinite}
+.epic .halo{background:radial-gradient(circle,var(--epic),transparent 70%)}
+.legendary .halo{background:radial-gradient(circle,var(--leg),transparent 70%)}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.9)}50%{opacity:.65;transform:scale(1.1)}}
+
+.stage{position:relative;height:170px;display:flex;align-items:flex-end;justify-content:center;z-index:1;padding-bottom:6px}
+.beam{position:absolute;left:50%;top:6px;width:70px;height:120px;transform:translateX(-50%);
+  background:linear-gradient(180deg,var(--leg2),transparent);clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);
+  opacity:0;z-index:2;pointer-events:none;filter:blur(2px)}
+.chest.open .beam{animation:beam 1.2s ease forwards}
+.epic .beam{background:linear-gradient(180deg,var(--epic2),transparent)}
+@keyframes beam{0%{opacity:0}30%{opacity:.85}100%{opacity:0}}
+
+.chestsvg{width:150px;height:150px;overflow:visible;animation:bob 2.8s ease-in-out infinite;z-index:3;position:relative}
+.legendary .chestsvg{animation:bob 2.8s ease-in-out infinite, sheen 6s linear infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes sheen{0%,100%{filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}50%{filter:drop-shadow(0 0 16px var(--leg))}}
+.chest.shake .chestsvg{animation:shake .45s ease-in-out infinite}
+@keyframes shake{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(-3px,1px) rotate(-2.5deg)}75%{transform:translate(3px,-1px) rotate(2.5deg)}}
+
+.lidgrp{transform-box:fill-box;transform-origin:50% 100%;transition:transform .55s cubic-bezier(.34,1.56,.5,1)}
+.chest.open .lidgrp{transform:translateY(-26px) rotate(-14deg) scaleY(.96)}
+.gemcore{animation:gem 2.2s ease-in-out infinite}
+@keyframes gem{0%,100%{opacity:.85}50%{opacity:1;filter:drop-shadow(0 0 6px currentColor)}}
+
+.title{font-size:16px;font-weight:700;margin-top:6px;position:relative;z-index:5}
+.sub{font-size:12px;color:#9fb6c9;margin-top:2px;min-height:16px;position:relative;z-index:5}
+.cta{margin-top:10px;font-size:11px;letter-spacing:1px;color:#cfe0ee;opacity:.8;position:relative;z-index:5}
+
+.spark{position:absolute;width:7px;height:7px;border-radius:50%;opacity:0;z-index:6;pointer-events:none}
+.chest.open .spark{animation:fly 1s ease-out forwards}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}}
+
+.modal{position:fixed;inset:0;background:rgba(2,6,12,.82);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(4px)}
+.modal.show{display:flex;animation:fade .25s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.card{background:linear-gradient(160deg,#0f2336,#0a1722);border-radius:20px;padding:26px;width:min(360px,90vw);
+  text-align:center;border:1px solid rgba(255,255,255,.1);position:relative;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.card.epic-c{box-shadow:0 0 50px -8px var(--epic)}
+.card.leg-c{box-shadow:0 0 50px -6px var(--leg)}
+.card .rar2{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.card.epic-c .rar2{color:var(--epic2)} .card.leg-c .rar2{color:var(--leg2)}
+.card h2{font-size:20px;margin:6px 0 2px}
+.card .url{font-size:11px;color:#8fa8bc;word-break:break-all;margin:8px 0 16px}
+.qrwrap{background:#fff;padding:12px;border-radius:14px;display:inline-block}
+.qrwrap img{width:220px;height:220px;display:block;image-rendering:pixelated}
+.openbtn{margin-top:16px;display:inline-block;background:var(--forti-red);color:#fff;text-decoration:none;
+  padding:10px 20px;border-radius:10px;font-weight:700;font-size:13px}
+.close{position:absolute;top:10px;right:14px;font-size:22px;color:#9fb6c9;cursor:pointer;border:0;background:none}
+footer{text-align:center;color:#5f7689;font-size:11px;padding:0 0 30px;position:relative;z-index:2}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 100 100"><path d="M10 20 L50 8 L90 20 L90 50 C90 78 50 94 50 94 C50 94 10 78 10 50 Z" fill="none" stroke="#EE3124" stroke-width="7"/><path d="M34 50 h32 M50 34 v32" stroke="#EE3124" stroke-width="7" stroke-linecap="round"/></svg>
+    <h1>Forti<span>Vault</span></h1>
+  </div>
+  <div class="tagline">Abre tu cofre · Escanea · Descubre</div>
+</header>
+
+<div class="grid" id="grid"></div>
+
+<div class="modal" id="modal">
+  <div class="card" id="card">
+    <button class="close" onclick="closeModal()">&times;</button>
+    <div class="rar2" id="m-rar"></div>
+    <h2 id="m-title"></h2>
+    <div class="qrwrap"><img id="m-qr" alt="QR"></div>
+    <div class="url" id="m-url"></div>
+    <a class="openbtn" id="m-open" target="_blank" rel="noopener">Abrir enlace</a>
+  </div>
+</div>
+
+<footer>Fortinet branding · Demo local · Generado para Héctor</footer>
+
+<script>
+const DATA = [{"id": 1, "rarity": "epic", "title": "Cofre 1", "sub": "MCP FortiOS Server", "url": "https://github.com/jmvigueras/mcp-fortios-server", "qr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXIAAAFyCAIAAABnRsZeAAAHqElEQVR4nO3cwW10NQBGUYKypAg6oP8y6IAi2D+2SCAL/b7G9ptz9pOZeUmuvPjkr+d5fgLo/Lz7AwBvIytATFaAmKwAMVkBYrICxGQFiMkKEJMVICYrQExWgJisADFZAWKyAsRkBYjJChCTFSAmK0BMVoDY98yLf/n1t+pzHOLPP37/4deOn8a6nzw2875jM9933V/OzPvu+h2daeZpOK0AMVkBYrICxGQFiMkKEJMVICYrQExWgJisALGple3Yun3njDPXkOsWq2d+311b2F1/k5/2v+C0AsRkBYjJChCTFSAmK0BMVoCYrAAxWQFisgLEFq5sx3bdZjpj1+2tN95lu+vW2DP3rGM3/i+MOa0AMVkBYrICxGQFiMkKEJMVICYrQExWgJisALFtK9v3WbfBXbdJnbHrU+16kvx3TitATFaAmKwAMVkBYrICxGQFiMkKEJMVICYrQMzK9no3rnt3LXRtcP8fTitATFaAmKwAMVkBYrICxGQFiMkKEJMVICYrQGzbyvZ9i8aZbzSzhR3b9dozF7pnet83cloBYrICxGQFiMkKEJMVICYrQExWgJisADFZAWILV7YzG833WbccXXdb7Zm35I6d+Zk/7X/BaQWIyQoQkxUgJitATFaAmKwAMVkBYrICxGQFiH09z7P7M1zjzK3kuntwz7yP9tNuur2R0woQkxUgJitATFaAmKwAMVkBYrICxGQFiMkKEJta2a67N3SXM+9YnfnJu3za2tVv4e+cVoCYrAAxWQFisgLEZAWIyQoQkxUgJitATFaA2PfMi2c2fGfewDq27lPd+H3PXFHPfKpdm9RdT3Ld03BaAWKyAsRkBYjJChCTFSAmK0BMVoCYrAAxWQFiUyvbdSvMT1vKzrzvjDO3sDPO/Jtc975n7rOdVoCYrAAxWQFisgLEZAWIyQoQkxUgJitATFaA2NTKdmxm/7drsfppq9OxG3elZ+53173vmZxWgJisADFZAWKyAsRkBYjJChCTFSAmK0BMVoDYwpXt2K5V4q57Q3fthnetij9tJz124z3HM5xWgJisADFZAWKyAsRkBYjJChCTFSAmK0BMVoDYtpXtOjO7w113rO7a/o7tugd35mnsugd3109e99qZz+y0AsRkBYjJChCTFSAmK0BMVoCYrAAxWQFisgLEvp7n2f0Z/sWZq9N1zryRdMaNC92Znzxj19/zur86pxUgJitATFaAmKwAMVkBYrICxGQFiMkKEJMVIDa1sr1xC/u+PevYrht2x963WB3b9ax2/bU7rQAxWQFisgLEZAWIyQoQkxUgJitATFaAmKwAse91P3rXRnPdzvLTPvOuDe77nvOZS9l1v0GnFSAmK0BMVoCYrAAxWQFisgLEZAWIyQoQkxUgNrWyPfPe0LEzb2Adu3F1uuu1N97Oe+P/0ZjTChCTFSAmK0BMVoCYrAAxWQFisgLEZAWIyQoQ+3qe54dfvG6zuM6ZS9l1W9gzXzu27nd04571xltynVaAmKwAMVkBYrICxGQFiMkKEJMVICYrQExWgNjUynbGriXl2I37zvdtYdf5tO87Y+ZZOa0AMVkBYrICxGQFiMkKEJMVICYrQExWgJisALHvdT/6xntSz7z5dfzamfXnrptQd62K1znzaezitALEZAWIyQoQkxUgJitATFaAmKwAMVkBYrICxKbusr3xPtpdq8R1K9t1zvwtvO++4bEb7zl2WgFisgLEZAWIyQoQkxUgJitATFaAmKwAMVkBYgtXtp+20Rxbt+49c7975m9/xq7nfOOTdFoBYrICxGQFiMkKEJMVICYrQExWgJisADFZAWKHrmzPfN8Zu3aWY57k//O+Y2cudGc4rQAxWQFisgLEZAWIyQoQkxUgJitATFaAmKwAsUNXtjfez7rrltyxM5/VOmf+FmacuXUec1oBYrICxGQFiMkKEJMVICYrQExWgJisADFZAWJTK9tPc+P2d8aNK+ob74U982nMfF+nFSAmK0BMVoCYrAAxWQFisgLEZAWIyQoQkxUg9j3z4k+7N3TdzvLMxeqMM9ef65z5mXd9KqcVICYrQExWgJisADFZAWKyAsRkBYjJChCTFSA2tbIdu3ENue6163a0614748ybX9fZ9X3P5LQCxGQFiMkKEJMVICYrQExWgJisADFZAWKyAsQWrmzH1m0H37ezXPe+6xar6xbJu37ymWvXdd9o5rfvtALEZAWIyQoQkxUgJitATFaAmKwAMVkBYrICxLatbN9n1wpz3fvOrDDft/0dO/NT7eK0AsRkBYjJChCTFSAmK0BMVoCYrAAxWQFisgLErGyPcOatsevs2tGu+7433t27jtMKEJMVICYrQExWgJisADFZAWKyAsRkBYjJChD7ep7nh1+8a9E449PuSZ1x47Mau/FvcoaVLfASsgLEZAWIyQoQkxUgJitATFaAmKwAMVkBYgvvst21pFxn1+p015p55o7VmU+1a7975vZ35jnv+stxWgFisgLEZAWIyQoQkxUgJitATFaAmKwAMVkBYlN32QL8k9MKEJMVICYrQExWgJisADFZAWKyAsRkBYjJChCTFSAmK0BMVoCYrAAxWQFisgLEZAWIyQoQkxUgJitA7C/O5+0Xg0TTDQAAAABJRU5ErkJggg=="}, {"id": 2, "rarity": "legendary", "title": "Cofre 2", "sub": "jmvigueras · GitHub", "url": "https://github.com/jmvigueras/", "qr": "data:image/png;base64,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"}, {"id": 3, "rarity": "epic", "title": "Cofre 3", "sub": "QKD Site-to-Site IPsec", "url": "https://community.fortinet.com/fortigate-3/technical-tip-how-to-configure-qkd-quantum-key-distribution-for-site-to-site-ipsec-key-management-173988", "qr": "data:image/png;base64,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"}, {"id": 4, "rarity": "epic", "title": "Cofre 4", "sub": "Post-Quantum Crypto IPsec", "url": "https://docs.fortinet.com/document/fortigate/7.6.0/new-features/229631/enhancing-security-with-post-quantum-cryptography-for-ipsec-key-exchange-7-6-1", "qr": "data:image/png;base64,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"}, {"id": 5, "rarity": "legendary", "title": "Cofre 5", "sub": "QKD + PQC 7.6.3", "url": "https://docs.fortinet.com/document/fortigate/7.6.0/new-features/249519/support-quantum-key-distribution-and-post-quantum-cryptography-7-6-3", "qr": "data:image/png;base64,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"}, {"id": 6, "rarity": "legendary", "title": "Cofre 6", "sub": "FortiToolbox", "url": "https://github.com/Metzcall/fortitoolbox", "qr": "data:image/png;base64,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"}];
+const grid = document.getElementById('grid');
+
+// Paletas por rareza para la madera/herrajes
+const PAL = {
+  epic:{wood1:'#5b3f8a',wood2:'#3a275e',wood3:'#2a1b48',metal1:'#d9c2ff',metal2:'#9b4dff',gem:'#c89bff',gemcore:'#fff'},
+  legendary:{wood1:'#8a5a22',wood2:'#5e3a12',wood3:'#3d260a',metal1:'#ffe089',metal2:'#d4a017',gem:'#ffd54a',gemcore:'#fff8d8'}
+};
+
+function chestSVG(r){
+  const p=PAL[r];
+  return `
+  <svg class="chestsvg" viewBox="0 0 150 150">
+    <defs>
+      <linearGradient id="w-${r}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${p.wood1}"/><stop offset="1" stop-color="${p.wood3}"/>
+      </linearGradient>
+      <linearGradient id="l-${r}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${p.wood1}"/><stop offset="1" stop-color="${p.wood2}"/>
+      </linearGradient>
+      <linearGradient id="m-${r}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${p.metal1}"/><stop offset="1" stop-color="${p.metal2}"/>
+      </linearGradient>
+      <radialGradient id="g-${r}" cx="50%" cy="40%" r="60%">
+        <stop offset="0" stop-color="${p.gemcore}"/><stop offset="60%" stop-color="${p.gem}"/><stop offset="100%" stop-color="${p.metal2}"/>
+      </radialGradient>
+    </defs>
+    <!-- sombra -->
+    <ellipse cx="75" cy="138" rx="48" ry="8" fill="#000" opacity=".35"/>
+    <!-- BASE -->
+    <g>
+      <rect x="26" y="78" width="98" height="52" rx="8" fill="url(#w-${r})" stroke="#1a1108" stroke-width="3"/>
+      <rect x="26" y="78" width="98" height="10" fill="#000" opacity=".18"/>
+      <line x1="50" y1="80" x2="50" y2="130" stroke="#000" opacity=".15" stroke-width="2"/>
+      <line x1="100" y1="80" x2="100" y2="130" stroke="#000" opacity=".15" stroke-width="2"/>
+      <!-- herrajes verticales -->
+      <rect x="38" y="78" width="9" height="52" fill="url(#m-${r})" stroke="#1a1108" stroke-width="1.5"/>
+      <rect x="103" y="78" width="9" height="52" fill="url(#m-${r})" stroke="#1a1108" stroke-width="1.5"/>
+      <!-- cerradura -->
+      <rect x="65" y="92" width="20" height="22" rx="3" fill="url(#m-${r})" stroke="#1a1108" stroke-width="2"/>
+      <circle cx="75" cy="100" r="3.4" fill="#1a1108"/>
+      <rect x="73.5" y="100" width="3" height="8" fill="#1a1108"/>
+    </g>
+    <!-- TAPA (se levanta) -->
+    <g class="lidgrp">
+      <path d="M26 86 Q26 50 75 50 Q124 50 124 86 Z" fill="url(#l-${r})" stroke="#1a1108" stroke-width="3"/>
+      <path d="M26 86 Q26 50 75 50 Q124 50 124 86" fill="none" stroke="#fff" opacity=".12" stroke-width="3"/>
+      <!-- herrajes curvos -->
+      <path d="M38 84 Q38 58 47 56 L47 86 Z" fill="url(#m-${r})" stroke="#1a1108" stroke-width="1.5"/>
+      <path d="M112 84 Q112 58 103 56 L103 86 Z" fill="url(#m-${r})" stroke="#1a1108" stroke-width="1.5"/>
+      <rect x="24" y="82" width="102" height="8" rx="4" fill="url(#m-${r})" stroke="#1a1108" stroke-width="2"/>
+      <!-- gema central -->
+      <g class="gemcore" style="color:${p.gem}">
+        <path d="M75 60 l11 8 -11 13 -11 -13 Z" fill="url(#g-${r})" stroke="#fff" stroke-width="1" opacity=".95"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+DATA.forEach(c=>{
+  const el=document.createElement('div');
+  el.className='chest '+c.rarity;
+  el.innerHTML=`
+    <div class="halo"></div>
+    <div class="rar">${c.rarity==='legendary'?'Legendario':'Épico'}</div>
+    <div class="stage">
+      <div class="beam"></div>
+      ${chestSVG(c.rarity)}
+    </div>
+    <div class="title">${c.title}</div>
+    <div class="sub">${c.sub}</div>
+    <div class="cta">▸ Toca para abrir</div>`;
+  el.addEventListener('click',()=>openChest(el,c));
+  grid.appendChild(el);
+});
+
+function sparkle(el){
+  const stage=el.querySelector('.stage');
+  for(let i=0;i<18;i++){
+    const s=document.createElement('div');s.className='spark';
+    const ang=Math.random()*6.28, d=45+Math.random()*70;
+    s.style.setProperty('--dx',(Math.cos(ang)*d)+'px');
+    s.style.setProperty('--dy',(Math.sin(ang)*d-35)+'px');
+    s.style.left='50%';s.style.top='45%';
+    const cols=el.classList.contains('legendary')?['#ffe089','#fff','#ffd54a']:['#c89bff','#fff','#9b4dff'];
+    s.style.background=cols[i%3];
+    stage.appendChild(s);setTimeout(()=>s.remove(),1100);
+  }
+}
+
+function openChest(el,c){
+  if(el.classList.contains('busy'))return;
+  el.classList.add('busy','shake');
+  setTimeout(()=>{
+    el.classList.remove('shake');el.classList.add('open');
+    sparkle(el);
+    setTimeout(()=>showModal(c),500);
+    setTimeout(()=>{el.classList.remove('open','busy')},1500);
+  },650);
+}
+
+function showModal(c){
+  const card=document.getElementById('card');
+  card.className='card '+(c.rarity==='legendary'?'leg-c':'epic-c');
+  document.getElementById('m-rar').textContent=(c.rarity==='legendary'?'★ Legendario':'◆ Épico');
+  document.getElementById('m-title').textContent=c.title;
+  document.getElementById('m-qr').src=c.qr;
+  document.getElementById('m-url').textContent=c.url;
+  document.getElementById('m-open').href=c.url;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+</script>
+</body>
+</html>
